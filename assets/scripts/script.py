@@ -27,7 +27,7 @@ def generate_json_for_assets(base_path, asset_folder, output_file):
 
 # Example usage
 base_path = os.getcwd()  # Change to your project's root directory if needed
-asset_folder = "../wallpapers"  # Relative path to your asset folder
-output_file = "../json/wallpapers.json"  # Desired output JSON file name
+asset_folder = "../sounds/"  # Relative path to your asset folder
+output_file = "../json/sounds.json"  # Desired output JSON file name
 
 generate_json_for_assets(base_path, asset_folder, output_file)
