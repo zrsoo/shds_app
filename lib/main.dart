@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // TODO:
 // 1.) Remove text in the middle.                       DONE
@@ -27,15 +31,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -47,6 +49,43 @@ class _MyHomePageState extends State<MyHomePage> {
   //     _counter++;
   //   });
   // }
+
+  late List<String> wallpaperPaths = [];
+  final random = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    loadWallpapers();
+  }
+
+  // Load the json from file
+  Future<void> loadWallpapers() async {
+    final String jsonString = await rootBundle.loadString('assets/images/json/wallpapers.json');
+
+    setState(() {
+      wallpaperPaths = List<String>.from(json.decode(jsonString));
+    });
+  }
+
+  // Select random photo from list, display it, and then delete from list
+  void showRandomWallpaperForDuration(BuildContext context, int durationInSeconds) {
+    String randomWallpaperPath = wallpaperPaths[random.nextInt(wallpaperPaths.length)];
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) =>
+          ImageScreen(wallpaperPath: randomWallpaperPath)),
+    );
+
+    // Duration delay
+    Future.delayed(Duration(seconds: durationInSeconds), () {
+      if(context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      wallpaperPaths.remove(randomWallpaperPath);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +117,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showRandomWallpaperForDuration(context, 4);
+                    },
                     style: const ButtonStyle(),
                     icon: SizedBox(
                         width: 115,
@@ -89,6 +130,21 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ImageScreen extends StatelessWidget {
+  const ImageScreen({super.key, required this.wallpaperPath});
+
+  final String wallpaperPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Image.asset(wallpaperPath),
       ),
     );
   }
