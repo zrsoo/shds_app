@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -51,20 +53,35 @@ class _MyHomePageState extends State<MyHomePage> {
   // }
 
   late List<String> wallpaperPaths = [];
+  late List<String> soundPaths = [];
+
+  static const int DURATION_IN_SECONDS = 4;
+
   final random = Random();
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
-    loadWallpapers();
+    loadWallpaperJson();
+    loadSoundJson();
   }
 
-  // Load the json from file
-  Future<void> loadWallpapers() async {
-    final String jsonString = await rootBundle.loadString('assets/images/json/wallpapers.json');
+  // Load the wallpaper json from file
+  Future<void> loadWallpaperJson() async {
+    final String jsonWallpaperString = await rootBundle.loadString('assets/json/wallpapers.json');
 
     setState(() {
-      wallpaperPaths = List<String>.from(json.decode(jsonString));
+      wallpaperPaths = List<String>.from(json.decode(jsonWallpaperString));
+    });
+  }
+
+  // Load the sound json from file
+  Future<void> loadSoundJson() async {
+    final String jsonSoundString = await rootBundle.loadString('assets/json/sounds.json');
+
+    setState(() {
+      soundPaths = List<String>.from(json.decode(jsonSoundString));
     });
   }
 
@@ -84,7 +101,34 @@ class _MyHomePageState extends State<MyHomePage> {
       }
 
       wallpaperPaths.remove(randomWallpaperPath);
+
+      if(wallpaperPaths.isEmpty) {
+        loadWallpaperJson();
+      }
     });
+  }
+
+  // Play sound for duration
+  void playRandomSoundForDuration(int durationInSeconds) async {
+    String randomSoundPath = soundPaths[random.nextInt(soundPaths.length)];
+
+    await _audioPlayer.play(AssetSource(randomSoundPath));
+
+    // Stop audio after duration
+    Timer(Duration(seconds: durationInSeconds), () {
+      _audioPlayer.stop();
+    });
+
+    soundPaths.remove(randomSoundPath);
+
+    if(soundPaths.isEmpty) {
+      loadSoundJson();
+    }
+  }
+
+  void showWallpaperAndPlaySound(BuildContext context, int duration) {
+    showRandomWallpaperForDuration(context, duration);
+    playRandomSoundForDuration(duration);
   }
 
   @override
@@ -118,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   child: IconButton(
                     onPressed: () {
-                      showRandomWallpaperForDuration(context, 4);
+                      showWallpaperAndPlaySound(context, DURATION_IN_SECONDS);
                     },
                     style: const ButtonStyle(),
                     icon: SizedBox(
