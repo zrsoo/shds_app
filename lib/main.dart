@@ -188,7 +188,10 @@ class ImageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Image.asset(wallpaperPath),
+        child: Image.asset(
+          wallpaperPath,
+          fit: BoxFit.cover
+        ),
       ),
     );
   }
